@@ -9,70 +9,70 @@
 import Cocoa
 
 extension NSUserNotificationCenter {
-    func post(title:String,info:String,identifier:String? = nil) {
+    func post(title: String, info: String, identifier: String? = nil) {
         let notification = NSUserNotification()
         notification.title = title
         notification.informativeText = info
         if identifier != nil {
-            notification.userInfo = ["identifier":identifier!]
+            notification.userInfo = ["identifier": identifier!]
         }
-        self.delegate = UserNotificationCenterDelegate.shared
-        self.deliver(notification)
+        delegate = UserNotificationCenterDelegate.shared
+        deliver(notification)
     }
-    
-    func postGenerateSimpleConfigNotice() {
-        self.post(title: NSLocalizedString("Sample Config File Created!", comment: ""),
-                  info: NSLocalizedString("We have created or replaced your current config with a simple config with external-controller specified!",comment: ""))
-    }
-    
+
     func postConfigFileChangeDetectionNotice() {
-        self.post(title: NSLocalizedString("Config file have been changed", comment: ""),
-                  info: NSLocalizedString("Tap to reload config", comment: ""),
-                  identifier:"postConfigFileChangeDetectionNotice")
+        post(title: NSLocalizedString("Config file have been changed", comment: ""),
+             info: NSLocalizedString("Tap to reload config", comment: ""),
+             identifier: "postConfigFileChangeDetectionNotice")
     }
-    
-    func postStreamApiConnectFail(api:String) {
-        self.post(title: "\(api) api connect error!",
-            info: NSLocalizedString("Use reload config to try reconnect.", comment: ""))
+
+    func postStreamApiConnectFail(api: String) {
+        post(title: "\(api) api connect error!",
+             info: NSLocalizedString("Use reload config to try reconnect.", comment: ""))
     }
-    
-    func postConfigErrorNotice(msg:String) {
-        let configName = ConfigManager.selectConfigName.count > 0 ? "\(ConfigManager.selectConfigName).yaml" : ""
-        
-        let message =  "\(configName): \(msg)"
-        self.post(title: NSLocalizedString("Config loading Fail!", comment: ""), info: message)
+
+    func postConfigErrorNotice(msg: String) {
+        let configName = ConfigManager.selectConfigName.count > 0 ?
+            Paths.configFileName(for: ConfigManager.selectConfigName) : ""
+
+        let message = "\(configName): \(msg)"
+        post(title: NSLocalizedString("Config loading Fail!", comment: ""), info: message)
     }
-    
-    
+
     func postSpeedTestBeginNotice() {
-        self.post(title: NSLocalizedString("SpeedTest", comment: ""),
-                  info: NSLocalizedString("SpeedTest has begun, please wait.", comment: ""))
+        post(title: NSLocalizedString("Benchmark", comment: ""),
+             info: NSLocalizedString("Benchmark has begun, please wait.", comment: ""))
     }
-    
+
     func postSpeedTestingNotice() {
-        self.post(title: NSLocalizedString("SpeedTest", comment: ""),
-                  info: NSLocalizedString("SpeedTest is processing, please wait.", comment: ""))
+        post(title: NSLocalizedString("Benchmark", comment: ""),
+             info: NSLocalizedString("Benchmark is processing, please wait.", comment: ""))
     }
-    
+
     func postSpeedTestFinishNotice() {
-        self.post(title: NSLocalizedString("SpeedTest", comment: ""),
-                  info: NSLocalizedString("SpeedTest Finished!", comment: ""))
+        post(title: NSLocalizedString("Benchmark", comment: ""),
+             info: NSLocalizedString("Benchmark Finished!", comment: ""))
+    }
+
+    func postProxyChangeByOtherAppNotice() {
+        post(title: NSLocalizedString("System Proxy Changed", comment: ""),
+             info: NSLocalizedString("Proxy settings are changed by another process. ClashX is no longer the default system proxy.", comment: ""))
     }
 }
 
-class UserNotificationCenterDelegate:NSObject,NSUserNotificationCenterDelegate {
+class UserNotificationCenterDelegate: NSObject, NSUserNotificationCenterDelegate {
     static let shared = UserNotificationCenterDelegate()
-    
+
     func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
         switch notification.userInfo?["identifier"] as? String {
         case "postConfigFileChangeDetectionNotice":
-            NotificationCenter.default.post(Notification(name: kShouldUpDateConfig))
+            AppDelegate.shared.updateConfig()
             center.removeAllDeliveredNotifications()
         default:
             break
         }
     }
-    
+
     func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
         return true
     }

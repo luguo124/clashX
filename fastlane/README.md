@@ -15,9 +15,14 @@ Install _fastlane_ using
 or alternatively using `brew cask install fastlane`
 
 # Available Actions
-### notarize
+### build
 ```
-fastlane notarize
+fastlane build
+```
+
+### beta
+```
+fastlane beta
 ```
 
 
